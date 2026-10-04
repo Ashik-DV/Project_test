@@ -4,14 +4,22 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'Ecommerce/Frontend/**'
 
   pull_request:
     branches:
       - main
+    paths:
+      - 'Ecommerce/Frontend/**'
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Ecommerce/Frontend
 
     steps:
 
@@ -25,6 +33,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: Ecommerce/Frontend/package-lock.json
 
       # 3. Install dependencies
       - name: Install dependencies
