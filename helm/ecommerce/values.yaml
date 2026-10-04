@@ -22,7 +22,7 @@ backend:
     pullPolicy: Always
 
   service:
-    type: ClusterIP
+    type: NodePort
     port: 8080
     targetPort: 8080
 
