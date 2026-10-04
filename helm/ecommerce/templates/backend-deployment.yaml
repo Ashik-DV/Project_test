@@ -4,6 +4,7 @@ metadata:
   name: {{ include "ecommerce.fullname" . }}-backend
   labels:
     {{- include "ecommerce.labels" . | nindent 4 }}
+
 spec:
   replicas: {{ .Values.backend.replicaCount }}
 
@@ -21,6 +22,7 @@ spec:
     spec:
       containers:
         - name: backend
+
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
           imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
 
@@ -29,7 +31,11 @@ spec:
               protocol: TCP
 
           env:
-            # JWT
+
+            # =========================
+            # JWT CONFIGURATION
+            # =========================
+
             - name: Jwt__Key
               valueFrom:
                 secretKeyRef:
@@ -45,9 +51,75 @@ spec:
             - name: Jwt__ExpiryMinutes
               value: {{ .Values.jwt.expiryMinutes | quote }}
 
-            # MySQL
+
+            # =========================
+            # MYSQL CONFIGURATION
+            # =========================
+
             - name: ConnectionStrings__DefaultConnection
               valueFrom:
                 secretKeyRef:
                   name: ecommerce-runtime-secret
                   key: mysql-connection
+
+
+            # =========================
+            # LOGGING CONFIGURATION
+            # =========================
+
+            - name: LoggingSettings__Provider
+              value: {{ .Values.logging.provider | quote }}
+
+
+            # =========================
+            # EMAIL CONFIGURATION
+            # =========================
+
+            - name: EmailSettings__Enabled
+              value: {{ .Values.email.enabled | quote }}
+
+            - name: EmailSettings__Host
+              value: {{ .Values.email.host | quote }}
+
+            - name: EmailSettings__Port
+              value: {{ .Values.email.port | quote }}
+
+            - name: EmailSettings__EnableSsl
+              value: {{ .Values.email.enableSsl | quote }}
+
+            - name: EmailSettings__Username
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-runtime-secret
+                  key: email-username
+
+            - name: EmailSettings__Password
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-runtime-secret
+                  key: email-password
+
+            - name: EmailSettings__FromAddress
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-runtime-secret
+                  key: email-from-address
+
+            - name: EmailSettings__FromName
+              value: {{ .Values.email.fromName | quote }}
+
+
+            # =========================
+            # GOOGLE CONFIGURATION
+            # =========================
+
+            - name: Google__ClientId
+              value: {{ .Values.google.clientId | quote }}
+
+
+            # =========================
+            # ALLOWED HOSTS
+            # =========================
+
+            - name: AllowedHosts
+              value: "*"
