@@ -1,0 +1,63 @@
+frontend:
+  replicaCount: 1
+
+  image:
+    repository: ashikdv/ecommercefrontend
+    tag: latest
+    pullPolicy: Always
+
+  service:
+    type: NodePort
+    port: 80
+    targetPort: 80
+    nodePort: 30080
+
+
+backend:
+  replicaCount: 1
+
+  image:
+    repository: ashikdv/ecommercebackend
+    tag: latest
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+
+
+mysql:
+  host: "10.131.231.134"
+  port: 3306
+  database: "ECommerceDB"
+  username: "root"
+  password: "root"
+
+
+jwt:
+  issuer: "ECommerceBackend"
+  audience: "ECommerceFrontend"
+  expiryMinutes: 60
+  key: ""
+
+
+logging:
+  provider: "Both"
+
+
+
+
+
+email:
+  enabled: true
+  host: "smtp.gmail.com"
+  port: 587
+  enableSsl: true
+  username: ""
+  fromAddress: ""
+  fromName: "ECommerce Store"
+  password: ""
+
+google:
+  clientId: ""

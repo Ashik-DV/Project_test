@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ecommerce.fullname" . }}-backend
+  labels:
+    app: {{ include "ecommerce.fullname" . }}-backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: {{ include "ecommerce.fullname" . }}-backend
+
+  template:
+    metadata:
+      labels:
+        app: {{ include "ecommerce.fullname" . }}-backend
+
+    spec:
+      containers:
+        - name: backend
+
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.service.targetPort }}
+              protocol: TCP
+
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-secret
+                  key: mysql-connection
+
+            - name: Jwt__Key
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-secret
+                  key: jwt-key
+
+            - name: Jwt__Issuer
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: jwt-issuer
+
+            - name: Jwt__Audience
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: jwt-audience
+
+            - name: Jwt__ExpiryMinutes
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: jwt-expiry-minutes
+
+            - name: LoggingSettings__Provider
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: logging-provider
+
+
+            - name: EmailSettings__Enabled
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: email-enabled
+
+            - name: EmailSettings__Host
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: email-host
+
+            - name: EmailSettings__Port
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: email-port
+
+            - name: EmailSettings__EnableSsl
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: email-enable-ssl
+
+            - name: EmailSettings__Username
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-secret
+                  key: email-username
+
+            - name: EmailSettings__Password
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-secret
+                  key: email-password
+
+            - name: EmailSettings__FromAddress
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-secret
+                  key: email-from-address
+
+            - name: EmailSettings__FromName
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: email-from-name
+
+            - name: Google__ClientId
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "ecommerce.fullname" . }}-config
+                  key: google-client-id
+
+            - name: AllowedHosts
+              value: "*"

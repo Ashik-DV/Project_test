@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ecommerce.fullname" . }}-config
+
+data:
+
+  jwt-issuer: "{{ .Values.jwt.issuer }}"
+
+  jwt-audience: "{{ .Values.jwt.audience }}"
+
+  jwt-expiry-minutes: "{{ .Values.jwt.expiryMinutes }}"
+
+  logging-provider: "{{ .Values.logging.provider }}"
+
+  email-enabled: "{{ .Values.email.enabled }}"
+
+  email-host: "{{ .Values.email.host }}"
+
+  email-port: "{{ .Values.email.port }}"
+
+  email-enable-ssl: "{{ .Values.email.enableSsl }}"
+
+  email-from-name: "{{ .Values.email.fromName }}"
+
+  google-client-id: "{{ .Values.google.clientId }}"
