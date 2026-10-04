@@ -12,6 +12,7 @@ on:
       - main
     paths:
       - 'ECommerceApp/ECommerceBackend/**'
+   # 6. Login to Docker Hub22
 
 jobs:
   build-and-push:
