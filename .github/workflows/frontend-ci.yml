@@ -5,13 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'Ecommerce/Frontend/**'
+      - 'ECommerceApp/ECommerceFrontend/**'
 
   pull_request:
     branches:
       - main
     paths:
-      - 'Ecommerce/Frontend/**'
+      - 'ECommerceApp/ECommerceFrontend/**'
 
 jobs:
   build-and-push:
@@ -19,21 +19,21 @@ jobs:
 
     defaults:
       run:
-        working-directory: Ecommerce/Frontend
+        working-directory: ECommerceApp/ECommerceFrontend
 
     steps:
 
-      # 1. Get source code
+      # 1. Checkout source code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Install Node.js
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: Ecommerce/Frontend/package-lock.json
+          cache-dependency-path: ECommerceApp/ECommerceFrontend/package-lock.json
 
       # 3. Install dependencies
       - name: Install dependencies

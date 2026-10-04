@@ -5,13 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'Ecommerce/Backend/**'
+      - 'ECommerceApp/ECommerceBackend/**'
 
   pull_request:
     branches:
       - main
     paths:
-      - 'Ecommerce/Backend/**'
+      - 'ECommerceApp/ECommerceBackend/**'
 
 jobs:
   build-and-push:
@@ -19,40 +19,33 @@ jobs:
 
     defaults:
       run:
-        working-directory: Ecommerce/Backend
+        working-directory: ECommerceApp/ECommerceBackend
 
     steps:
 
-      # 1. Checkout source code
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      # 2. Setup .NET 10
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      # 3. Restore NuGet packages
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore ECommerceBackend.csproj
 
-      # 4. Build application
       - name: Build application
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build ECommerceBackend.csproj --configuration Release --no-restore
 
-      # 5. Publish application
       - name: Publish application
-        run: dotnet publish --configuration Release --no-build --output ./publish
+        run: dotnet publish ECommerceBackend.csproj --configuration Release --no-build --output ./publish
 
-      # 6. Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      # 7. Build Docker image
       - name: Build Docker image
         run: |
           docker build \
@@ -60,7 +53,6 @@ jobs:
             -t ashikdv/ecommercebackend:latest \
             .
 
-      # 8. Push Docker image
       - name: Push Docker image
         run: |
           docker push ashikdv/ecommercebackend:${{ github.sha }}
