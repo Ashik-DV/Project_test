@@ -28,25 +28,20 @@ backend:
 
 
 mysql:
-  host: "10.131.231.134"
+  host: "YOUR_MYSQL_HOST"
   port: 3306
   database: "ECommerceDB"
   username: "root"
-  password: "root"
 
 
 jwt:
   issuer: "ECommerceBackend"
   audience: "ECommerceFrontend"
   expiryMinutes: 60
-  key: ""
 
 
 logging:
   provider: "Both"
-
-
-
 
 
 email:
@@ -54,10 +49,10 @@ email:
   host: "smtp.gmail.com"
   port: 587
   enableSsl: true
-  username: ""
-  fromAddress: ""
   fromName: "ECommerce Store"
-  password: ""
+
 
 google:
   clientId: ""
+
+
