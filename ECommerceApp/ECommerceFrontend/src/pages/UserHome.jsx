@@ -60,7 +60,7 @@ useEffect(() =>
     {
         clearInterval(timer);
     };
-}, []);
+}, [ads.length]);
 
 const nextAd = () =>
 {

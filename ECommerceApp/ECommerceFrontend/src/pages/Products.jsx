@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import {
@@ -41,7 +41,7 @@ const [sortBy, setSortBy] = useState("default");
 const [showFilters, setShowFilters] = useState(false);
 
 const [page, setPage] = useState(1);
-const [pageSize] = useState(12);
+const pageSize = 12;
 
 const [totalCount, setTotalCount] = useState(0);
 const [totalPages, setTotalPages] = useState(0);
@@ -69,7 +69,7 @@ const isAdmin =
     user.role &&
     user.role.toLowerCase() === "admin";
 
-const loadProducts = async (requestedPage = page) =>
+const loadProducts = useCallback(async (requestedPage) =>
 {
     try
     {
@@ -93,18 +93,21 @@ const loadProducts = async (requestedPage = page) =>
         setTotalPages(data.totalPages || 0);
         setPage(data.page || requestedPage);
 
-        const defaultQuantities = {};
-
-        (data.products || []).forEach(product =>
+        setQuantities(previous =>
         {
-            defaultQuantities[product.id] =
-                quantities[product.id] || 1;
-        });
+            const defaultQuantities = {};
 
-        setQuantities(previous => ({
-            ...previous,
-            ...defaultQuantities
-        }));
+            (data.products || []).forEach(product =>
+            {
+                defaultQuantities[product.id] =
+                    previous[product.id] || 1;
+            });
+
+            return {
+                ...previous,
+                ...defaultQuantities
+            };
+        });
     }
     catch (err)
     {
@@ -120,7 +123,16 @@ const loadProducts = async (requestedPage = page) =>
     {
         setLoading(false);
     }
-};
+}, [
+    brand,
+    category,
+    maxPrice,
+    minPrice,
+    pageSize,
+    searchTerm,
+    sortBy,
+    stockFilter
+]);
 
 const loadFilterOptions = async () =>
 {
@@ -142,7 +154,29 @@ const loadFilterOptions = async () =>
 
 useEffect(() =>
 {
-    loadFilterOptions();
+    let active = true;
+
+    getProductFilterOptions()
+        .then(data =>
+        {
+            if (active)
+            {
+                setCategories(data.categories || []);
+                setBrands(data.brands || []);
+            }
+        })
+        .catch(err =>
+        {
+            console.error(
+                "Unable to load filter options",
+                err
+            );
+        });
+
+    return () =>
+    {
+        active = false;
+    };
 }, []);
 
 useEffect(() =>
@@ -184,7 +218,8 @@ useEffect(() =>
     minPrice,
     maxPrice,
     stockFilter,
-    sortBy
+    sortBy,
+    loadProducts
 ]);
 
 useEffect(() =>
