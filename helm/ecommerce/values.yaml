@@ -7,11 +7,9 @@ frontend:
     pullPolicy: Always
 
   service:
-    type: NodePort
+    type: ClusterIP
     port: 80
     targetPort: 80
-    nodePort: 30080
-
 
 backend:
   replicaCount: 1
@@ -22,10 +20,9 @@ backend:
     pullPolicy: Always
 
   service:
-    type: NodePort
+    type: ClusterIP
     port: 8080
     targetPort: 8080
-
 
 mysql:
   host: "YOUR_MYSQL_HOST"
@@ -33,16 +30,13 @@ mysql:
   database: "ECommerceDB"
   username: "root"
 
-
 jwt:
   issuer: "ECommerceBackend"
   audience: "ECommerceFrontend"
   expiryMinutes: 60
 
-
 logging:
   provider: "Both"
-
 
 email:
   enabled: true
@@ -51,8 +45,11 @@ email:
   enableSsl: true
   fromName: "ECommerce Store"
 
-
 google:
   clientId: ""
 
-
+ingress:
+  enabled: true
+  className: nginx
+  frontendHost: ashik.test
+  backendHost: api.ashik.test

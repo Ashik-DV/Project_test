@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5208/api/Order";
+const API_URL = "http://api.ashik.test/api/Order";
 
 const getAuthConfig = () =>
 {

@@ -1,10 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5208/api/Cart";
-
-// ======================================================
-// AUTHORIZATION HEADER
-// ======================================================
+const API_URL = "http://api.ashik.test/api/Cart";
 
 const getAuthHeaders = () =>
 {
@@ -19,11 +15,6 @@ return {
 
 };
 
-// ======================================================
-// GET CART
-// GET: /api/Cart
-// ======================================================
-
 export const getCart = async () =>
 {
 const response =
@@ -35,11 +26,6 @@ getAuthHeaders()
 return response.data;
 
 };
-
-// ======================================================
-// ADD TO CART
-// POST: /api/Cart
-// ======================================================
 
 export const addToCart = async (
 productId,
@@ -60,11 +46,6 @@ return response.data;
 
 };
 
-// ======================================================
-// UPDATE CART ITEM
-// PUT: /api/Cart/{cartItemId}
-// ======================================================
-
 export const updateCartItem = async (
 cartItemId,
 quantity
@@ -83,11 +64,6 @@ return response.data;
 
 };
 
-// ======================================================
-// REMOVE CART ITEM
-// DELETE: /api/Cart/{cartItemId}
-// ======================================================
-
 export const removeCartItem = async (
 cartItemId
 ) =>
@@ -101,11 +77,6 @@ getAuthHeaders()
 return response.data;
 
 };
-
-// ======================================================
-// CLEAR CART
-// DELETE: /api/Cart
-// ======================================================
 
 export const clearCart = async () =>
 {
