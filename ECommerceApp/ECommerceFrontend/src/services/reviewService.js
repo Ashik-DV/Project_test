@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5208/api/Reviews";
+const API_URL = "http://api.ashik.test/api/Reviews";
 
 const getAuthConfig = () => ({
     headers: {
