@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5208/api";
+const API_URL = "http://api.ashik.test/api";
 
 export const registerUser = async (userData) => {
     const response = await fetch(`${API_URL}/Auth/register`, {
@@ -17,7 +17,6 @@ export const registerUser = async (userData) => {
 
     return data;
 };
-
 
 export const loginUser = async (loginData) => {
     const response = await fetch(`${API_URL}/Auth/login`, {
