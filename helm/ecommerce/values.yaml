@@ -1,5 +1,5 @@
 frontend:
-  replicaCount: 2
+  replicaCount: 1
 
   image:
     repository: ashikdv/ecommercefrontend
@@ -12,7 +12,7 @@ frontend:
     targetPort: 80
 
 backend:
-  replicaCount: 2
+  replicaCount: 1
 
   image:
     repository: ashikdv/ecommercebackend
