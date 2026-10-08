@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://api.ashik.test/api/Cart";
+const API_URL = "/api/Cart";
 
 const getAuthHeaders = () =>
 {
