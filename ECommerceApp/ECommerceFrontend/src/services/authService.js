@@ -1,4 +1,4 @@
-const API_URL = "http://api.ashik.test/api";
+const API_URL = "/api";
 
 export const registerUser = async (userData) => {
     const response = await fetch(`${API_URL}/Auth/register`, {
