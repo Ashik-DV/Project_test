@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://api.ashik.test/api/Wishlist";
+const API_URL = "/api/Wishlist";
 
 const getAuthConfig = () => ({
     headers: {
