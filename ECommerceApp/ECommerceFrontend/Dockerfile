@@ -25,6 +25,9 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy React production build
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# Use custom Nginx configuration for React Router
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expose HTTP port
 EXPOSE 80
 
