@@ -6,12 +6,16 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
-
   rules:
-
-    # Frontend - default route
     - http:
         paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ecommerce.fullname" . }}-backend
+                port:
+                  number: {{ .Values.backend.service.port }}
           - path: /
             pathType: Prefix
             backend:
@@ -19,17 +23,4 @@ spec:
                 name: {{ include "ecommerce.fullname" . }}-frontend
                 port:
                   number: {{ .Values.frontend.service.port }}
-
-    # Backend API
-    - host: {{ .Values.ingress.backendHost }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "ecommerce.fullname" . }}-backend
-                port:
-                  number: {{ .Values.backend.service.port }}
-
 {{- end }}
