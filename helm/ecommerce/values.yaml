@@ -51,5 +51,5 @@ google:
 ingress:
   enabled: true
   className: nginx
-  frontendHost: ashik.test
+  frontendHost: ""
   backendHost: api.ashik.test
