@@ -56,6 +56,42 @@ variable "aks_subnet_cidr" {
   default     = "10.20.1.0/24"
 }
 
+variable "mysql_subnet_cidr" {
+  description = "Address prefix for the delegated MySQL Flexible Server subnet."
+  type        = string
+  default     = "10.20.2.0/24"
+}
+
+variable "mysql_server_name" {
+  description = "Base name for the Azure Database for MySQL Flexible Server. A random suffix is added for global uniqueness."
+  type        = string
+  default     = "mysql-ecommerce-observability"
+}
+
+variable "mysql_database_name" {
+  description = "Application database name."
+  type        = string
+  default     = "ecommerce"
+}
+
+variable "mysql_admin_username" {
+  description = "MySQL administrator username."
+  type        = string
+  default     = "mysqladmin"
+}
+
+variable "mysql_sku_name" {
+  description = "MySQL Flexible Server SKU for the lab."
+  type        = string
+  default     = "B_Standard_B1ms"
+}
+
+variable "mysql_storage_size_gb" {
+  description = "MySQL Flexible Server storage size in GB."
+  type        = number
+  default     = 20
+}
+
 variable "tags" {
   description = "Tags applied to all created resources."
   type        = map(string)
