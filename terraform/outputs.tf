@@ -27,3 +27,29 @@ output "log_analytics_workspace_id" {
   description = "Log Analytics workspace resource ID."
   value       = azurerm_log_analytics_workspace.this.id
 }
+
+output "mysql_server_name" {
+  description = "MySQL Flexible Server name."
+  value       = azurerm_mysql_flexible_server.this.name
+}
+
+output "mysql_database_name" {
+  description = "Application MySQL database name."
+  value       = azurerm_mysql_flexible_database.ecommerce.name
+}
+
+output "mysql_admin_username" {
+  description = "MySQL administrator username."
+  value       = var.mysql_admin_username
+}
+
+output "mysql_admin_password" {
+  description = "Generated MySQL administrator password. Stored in Terraform state and marked sensitive."
+  value       = random_password.mysql_admin.result
+  sensitive   = true
+}
+
+output "mysql_connection_host" {
+  description = "Private MySQL server hostname for the application."
+  value       = azurerm_mysql_flexible_server.this.fqdn
+}
