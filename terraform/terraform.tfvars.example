@@ -1,0 +1,16 @@
+# Copy this file to terraform.tfvars and edit for your subscription.
+# Check Azure policy, regional VM availability and quota before terraform apply.
+
+location            = "malaysiawest"
+resource_group_name = "rg-ecommerce-observability"
+cluster_name        = "aks-ecommerce-observability"
+dns_prefix          = "ecommerce-observability"
+
+node_count   = 1
+node_vm_size = "Standard_D2as_v5"
+
+vnet_cidr       = "10.20.0.0/16"
+aks_subnet_cidr = "10.20.1.0/24"
+
+# Empty means Azure selects its current default supported Kubernetes version.
+kubernetes_version = ""
