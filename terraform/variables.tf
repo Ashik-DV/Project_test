@@ -41,7 +41,7 @@ variable "node_count" {
 variable "node_vm_size" {
   description = "AKS node VM SKU. Confirm regional availability and quota before applying."
   type        = string
-  default     = "Standard_D2as_v5"
+  default     = "Standard_D2s_v3"
 }
 
 variable "vnet_cidr" {
