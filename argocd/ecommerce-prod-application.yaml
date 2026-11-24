@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ecommerce-prod
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/Ashik-DV/Project_test.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/Ashik-DV/Project_test.git
+      targetRevision: main
+      path: helm/ecommerce
+      helm:
+        valueFiles:
+          - $values/infrastructure/prod/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ecommerce
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
