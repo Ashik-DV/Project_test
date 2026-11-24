@@ -10,7 +10,7 @@ spec:
   selector:
     matchLabels:
       {{- include "ecommerce.selectorLabels" . | nindent 6 }}
-      app: ecommerce-backend
+      app: {{ include "ecommerce.fullname" . }}-backend
   template:
     metadata:
       labels:
