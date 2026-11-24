@@ -60,7 +60,7 @@ const handleCheckout = async (event) =>
 
         const response =
             await axios.post(
-                "http://localhost:5208/api/Order/checkout",
+                "/api/Order/checkout",
 
                 {
                     shippingAddress:

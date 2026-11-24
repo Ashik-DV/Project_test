@@ -1,5 +1,3 @@
-const BACKEND_ORIGIN = "http://localhost:5208";
-
 export const getImageUrl = (value) =>
 {
     if (typeof value !== "string")
@@ -36,7 +34,7 @@ export const getImageUrl = (value) =>
 
     if (trimmedValue.startsWith("/"))
     {
-        return `${BACKEND_ORIGIN}${trimmedValue}`;
+        return trimmedValue;
     }
 
     return `https://${trimmedValue}`;

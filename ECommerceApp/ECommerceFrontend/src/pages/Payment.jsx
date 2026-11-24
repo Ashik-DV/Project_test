@@ -228,7 +228,7 @@ const handlePayment = async (
 
         const response =
             await axios.post(
-                "http://localhost:5208/api/Order/verify-payment",
+                "/api/Order/verify-payment",
 
                 {
                     orderId:

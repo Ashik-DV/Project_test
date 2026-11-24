@@ -110,7 +110,7 @@ function Login()
             {
                 const response =
                     await axios.post(
-                        "http://localhost:5208/api/Auth/login",
+                        "/api/Auth/login",
                         {
                             email: email,
                             password: password
