@@ -55,6 +55,11 @@ resource "helm_release" "argocd" {
     applicationSet = { enabled = false }
     "redis-ha"    = { enabled = false }
     controller    = { replicas = 1 }
+    configs = {
+      params = {
+        "server.insecure" = true
+      }
+    }
     repoServer    = { replicas = 1 }
     server = {
       replicas = 1
