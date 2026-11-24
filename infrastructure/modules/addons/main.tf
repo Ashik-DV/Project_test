@@ -20,7 +20,11 @@ resource "helm_release" "ingress_nginx" {
     controller = {
       replicaCount = 1
       service = {
-        type = "LoadBalancer"
+        type                  = "LoadBalancer"
+        externalTrafficPolicy = "Local"
+        annotations = {
+          "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/healthz"
+        }
       }
       resources = {
         requests = {

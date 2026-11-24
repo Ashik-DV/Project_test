@@ -15,7 +15,7 @@ spec:
     metadata:
       labels:
         {{- include "ecommerce.selectorLabels" . | nindent 8 }}
-        app: ecommerce-backend
+        app: {{ include "ecommerce.fullname" . }}-backend
     spec:
       containers:
         - name: ecommerce-backend
