@@ -14,9 +14,10 @@ terraform {
 inputs = merge(local.env, {
   location = local.common.locals.location
   tags     = local.common.locals.tags
-  mysql_admin_password = get_env("TF_VAR_mysql_admin_password")
+
+  mysql_admin_password   = get_env("TF_VAR_mysql_admin_password")
   tfstate_resource_group  = "rg-tfstate"
-  tfstate_storage_account = "REPLACE_WITH_STORAGE_ACCOUNT_NAME"
+  tfstate_storage_account = "ashiktfstate2168"
   tfstate_container       = "tfstate"
   shared_state_key        = "dev/terraform.tfstate"
 })
