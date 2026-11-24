@@ -29,7 +29,7 @@ resource "azurerm_mysql_flexible_server" "this" {
   backup_retention_days  = 7
   delegated_subnet_id    = var.mysql_subnet_id
   private_dns_zone_id    = azurerm_private_dns_zone.mysql.id
-  public_network_access = false
+  public_network_access  = "Disabled"
 
   storage {
     size_gb           = 20
