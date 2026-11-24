@@ -45,12 +45,10 @@ From this directory, using Terragrunt 0.63.x:
 
 ```bash
 terragrunt run-all init
-terragrunt run-all validate
-terragrunt run-all plan
 terragrunt run-all apply
 ```
 
-Review every plan. If you prefer staged deployment, apply shared resources first, then Dev, then Prod:
+Terragrunt will show a plan and request confirmation for each unit as it applies. For a first deployment, avoid running a root-level run-all plan before dependency states exist; dependency outputs are needed by downstream units. After the first deployment, you can run terragrunt run-all plan to review changes. If you prefer staged deployment, apply shared resources first, then Dev, then Prod:
 ```bash
 cd environments/shared && terragrunt run-all apply
 cd ../dev && terragrunt run-all apply
