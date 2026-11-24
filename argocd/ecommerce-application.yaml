@@ -1,17 +1,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ecommerce
+  name: ecommerce-dev
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/Ashik-DV/Project_test.git
-    targetRevision: main
-    path: helm/ecommerce
-    helm:
-      valueFiles:
-        - values.yaml
+  sources:
+    # This source makes infrastructure/dev/values.yaml available to Helm.
+    - repoURL: https://github.com/Ashik-DV/Project_test.git
+      targetRevision: main
+      ref: values
+    # The chart source uses the environment-specific values from the source above.
+    - repoURL: https://github.com/Ashik-DV/Project_test.git
+      targetRevision: main
+      path: helm/ecommerce
+      helm:
+        valueFiles:
+          - $values/infrastructure/dev/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: ecommerce
