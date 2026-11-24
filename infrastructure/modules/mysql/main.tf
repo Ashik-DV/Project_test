@@ -6,7 +6,7 @@ resource "random_string" "suffix" {
 }
 
 resource "azurerm_private_dns_zone" "mysql" {
-  name                = "mysql.database.azure.com"
+  name                = "private.mysql.database.azure.com"
   resource_group_name = var.resource_group_name
   tags                = var.tags
 }
