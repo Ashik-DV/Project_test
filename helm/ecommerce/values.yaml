@@ -1,11 +1,9 @@
 frontend:
   replicaCount: 1
-
   image:
     repository: ashikdv/ecommercefrontend
     tag: latest
     pullPolicy: Always
-
   service:
     type: ClusterIP
     port: 80
@@ -13,22 +11,15 @@ frontend:
 
 backend:
   replicaCount: 1
-
+  existingSecret: ecommerce-runtime-secret
   image:
     repository: ashikdv/ecommercebackend
     tag: latest
     pullPolicy: Always
-
   service:
     type: ClusterIP
     port: 8080
     targetPort: 8080
-
-mysql:
-  host: "YOUR_MYSQL_HOST"
-  port: 3306
-  database: "ECommerceDB"
-  username: "root"
 
 jwt:
   issuer: "ECommerceBackend"
@@ -51,3 +42,4 @@ google:
 ingress:
   enabled: true
   className: nginx
+  host: ""
