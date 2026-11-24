@@ -1,0 +1,4 @@
+# Dev application values.
+# Keep environment-specific Helm values here; the Terraform/AKS modules
+# do not read this file automatically.
+environment: dev
