@@ -4,8 +4,8 @@ environment: prod
 frontend:
   replicaCount: 2
   image:
-    repository: ashikdv/ecommercefrontend
-    tag: latest
+    repository: ecomlabuou1fc.azurecr.io/ecommercefrontend
+    tag: sessionfix-20261125
 
 backend:
   replicaCount: 2
