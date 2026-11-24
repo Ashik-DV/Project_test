@@ -1,20 +1,49 @@
 # Azure Dev + Prod infrastructure
 
-This folder adds a quota-conscious Terraform + Terragrunt starter for the E-Commerce app.
+This Terraform + Terragrunt setup deploys the E-Commerce platform into two environments in Malaysia West.
 
-## Design
-- Region: Malaysia West.
-- Two separate AKS clusters, Dev and Prod; one small Standard_D2s_v3 node each.
-- One shared VNet with separate Dev/Prod AKS subnets and a delegated MySQL subnet.
-- One shared Basic ACR; both AKS kubelet identities receive AcrPull.
-- One shared private MySQL Flexible Server with separate ecommerce_dev and ecommerce_prod databases.
-- Separate resource groups and Key Vaults for Dev and Prod.
-- Only two AKS add-ons per cluster: NGINX Ingress Controller and Argo CD.
+## Folder structure
 
-This is a learning footprint, not production HA. Two AKS clusters still consume VM quota and incur ongoing compute, disk, load balancer, IP and database charges. SKU/service availability is not guaranteed for Azure for Students. Check quota before applying.
+```text
+infrastructure/
+├── terragrunt.hcl
+├── _common.hcl
+├── README.md
+├── modules/
+│   ├── platform/             # Root Terraform module composed from the modules below
+│   ├── resource-group/
+│   ├── networking/
+│   ├── acr/
+│   ├── aks/
+│   ├── mysql/
+│   ├── keyvault/
+│   └── addons/               # NGINX Ingress + Argo CD
+├── dev/
+│   └── terragrunt.hcl        # The only Terragrunt entry point for Dev
+└── prod/
+    └── terragrunt.hcl        # The only Terragrunt entry point for Prod
+```
 
-## Bootstrap remote state first
-Create a storage account and blob container outside this stack to avoid the backend bootstrap problem:
+Each environment has one Terragrunt configuration. It calls the composite Terraform root module at modules/platform. That root module calls the smaller reusable Terraform modules. Terraform resources and module blocks belong in Terraform .tf files, not in terragrunt.hcl.
+
+## What gets created
+
+- Two separate AKS clusters, one small node per cluster (Standard_D2s_v3).
+- One shared VNet with separate Dev and Prod AKS subnets and a delegated MySQL subnet.
+- One shared Basic Azure Container Registry (ACR), with AcrPull granted to both clusters.
+- One shared private MySQL Flexible Server with ecommerce_dev and ecommerce_prod databases.
+- A separate resource group and Key Vault for each environment.
+- NGINX Ingress Controller and Argo CD installed in each cluster.
+
+This is a learning footprint, not production HA. Two AKS clusters still consume VM quota and incur ongoing compute, disk, load balancer, IP and database charges. Azure for Students quotas and SKU availability must be checked before deployment.
+
+## Shared-resource ownership
+
+To preserve exactly two environment states, Dev owns the shared VNet, ACR and MySQL server. Prod reads their outputs from the Dev Terraform state. Deploy Dev first and Prod second. Do not destroy the Dev stack while Prod is using the shared resources. If you need Dev and Prod to have fully independent lifecycles, introduce a third dedicated shared state/unit instead.
+
+## 1. Bootstrap remote state
+
+Create the state resource group, storage account and blob container outside Terraform:
 
 ```bash
 az group create --name rg-tfstate --location malaysiawest
@@ -22,9 +51,15 @@ az storage account create --name <unique_storage_name> --resource-group rg-tfsta
 az storage container create --name tfstate --account-name <unique_storage_name> --auth-mode login
 ```
 
-Replace REPLACE_WITH_STORAGE_ACCOUNT_NAME in terragrunt.hcl. Grant your identity Storage Blob Data Contributor on the state account and permissions to create Azure resources.
+Update the storage account placeholder in all three places:
+- infrastructure/terragrunt.hcl
+- infrastructure/dev/terragrunt.hcl
+- infrastructure/prod/terragrunt.hcl
 
-## Login and quota checks
+Grant your Azure identity Storage Blob Data Contributor on the storage account, plus permissions to create the infrastructure resources.
+
+## 2. Login and check quota
+
 ```bash
 az login
 az account set --subscription "<YOUR_STUDENT_SUBSCRIPTION_ID>"
@@ -32,38 +67,71 @@ az vm list-usage --location malaysiawest -o table
 az vm list-skus --location malaysiawest --resource-type virtualMachines --query "[?name=='Standard_D2s_v3']" -o table
 ```
 
-AzureRM v4 also needs the subscription ID available to the provider. In Bash: `export ARM_SUBSCRIPTION_ID="<YOUR_SUBSCRIPTION_ID>"`; in PowerShell: `$env:ARM_SUBSCRIPTION_ID="<YOUR_SUBSCRIPTION_ID>"`.
+AzureRM v4 needs the subscription ID in the environment:
 
-Set the MySQL password before applying:
-- Bash: `export TF_VAR_mysql_admin_password='Use-A-Strong-Unique-Password!'`
-- PowerShell: `$env:TF_VAR_mysql_admin_password = "Use-A-Strong-Unique-Password!"`
-
-Terraform state contains sensitive infrastructure values. Protect the state account and never commit passwords or state files.
-
-## Deploy
-From this directory, using Terragrunt 0.63.x:
-
+Bash:
 ```bash
-terragrunt run-all init
-terragrunt run-all apply
+export ARM_SUBSCRIPTION_ID="<YOUR_SUBSCRIPTION_ID>"
 ```
 
-Terragrunt will show a plan and request confirmation for each unit as it applies. For a first deployment, avoid running a root-level run-all plan before dependency states exist; dependency outputs are needed by downstream units. After the first deployment, you can run terragrunt run-all plan to review changes. If you prefer staged deployment, apply shared resources first, then Dev, then Prod:
-```bash
-cd environments/shared && terragrunt run-all apply
-cd ../dev && terragrunt run-all apply
-cd ../prod && terragrunt run-all apply
+PowerShell:
+```powershell
+$env:ARM_SUBSCRIPTION_ID="<YOUR_SUBSCRIPTION_ID>"
 ```
 
-Destroy Dev and Prod before shared resources. Never destroy the state account while state is stored there.
+Set a strong MySQL administrator password. Do not put it in Git:
 
-## Argo CD
-Each cluster receives its own Argo CD and ingress-nginx installation. Argo CD server is ClusterIP. After getting the cluster credentials, access it with:
+Bash:
+```bash
+export TF_VAR_mysql_admin_password='Use-A-Strong-Unique-Password!'
+```
+
+PowerShell:
+```powershell
+$env:TF_VAR_mysql_admin_password="Use-A-Strong-Unique-Password!"
+```
+
+## 3. Deploy in order
+
+Run these commands from the infrastructure directory:
+
+```bash
+cd dev
+terragrunt init
+terragrunt validate
+terragrunt plan
+terragrunt apply
+```
+
+Wait for Dev to finish successfully. Dev creates the shared resources and stores their outputs in dev/terraform.tfstate.
+
+Then deploy Prod:
+
+```bash
+cd ../prod
+terragrunt init
+terragrunt validate
+terragrunt plan
+terragrunt apply
+```
+
+Run plan and apply separately so you can inspect the changes before confirming them. Do not run prod before dev has successfully created the shared resources.
+
+## 4. Argo CD access
+
+Each cluster receives its own Argo CD and ingress-nginx installation. Argo CD server is configured as ClusterIP. After connecting kubectl to the required cluster:
+
 ```bash
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
 ```
-Change the initial password. Update ../argocd/ecommerce-application.yaml to the correct repo branch and chart path. Create the backend runtime Kubernetes Secret and environment-specific Helm values before syncing.
 
-## Important integration work
-The existing CI workflows publish Docker Hub images. This stack creates ACR with admin access disabled and grants AKS AcrPull. Update CI to authenticate to ACR and push there, then update Helm image references. Key Vaults are provisioned with RBAC, but app identities/secret grants are not configured in this starter. Restrict AKS API access and harden networking before real production use.
+Change the initial password. Configure the Argo CD application manifest and create the backend runtime Kubernetes Secret before syncing the application.
+
+## Notes and remaining application integration
+
+- The existing CI workflows publish Docker Hub images. Update CI to push to the ACR created here, then update Helm image references.
+- Key Vaults are created with RBAC, but application identity permissions and secret population are not configured in this starter.
+- The AKS API endpoints are public in this learning setup. Restrict authorized IP ranges and harden networking before production use.
+- Terraform state contains sensitive infrastructure values. Protect the state storage account and never commit state files or credentials.
+- Destroy Prod first. Do not destroy Dev while it owns shared infrastructure. Keep the remote-state storage account until all state is no longer needed.
