@@ -5,122 +5,71 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "ecommerce.labels" . | nindent 4 }}
-
 spec:
   replicas: {{ .Values.backend.replicaCount }}
-
   selector:
     matchLabels:
       {{- include "ecommerce.selectorLabels" . | nindent 6 }}
       app: ecommerce-backend
-
   template:
     metadata:
       labels:
         {{- include "ecommerce.selectorLabels" . | nindent 8 }}
         app: ecommerce-backend
-
     spec:
       containers:
         - name: ecommerce-backend
-
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
           imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
-
           ports:
-            - containerPort: 8080
+            - name: http
+              containerPort: {{ .Values.backend.service.targetPort }}
               protocol: TCP
-
           env:
-
-            # =========================
-            # JWT CONFIGURATION
-            # =========================
-
             - name: Jwt__Key
               valueFrom:
                 secretKeyRef:
-                  name: ecommerce-runtime-secret
+                  name: {{ .Values.backend.existingSecret | quote }}
                   key: jwt-key
-
             - name: Jwt__Issuer
               value: {{ .Values.jwt.issuer | quote }}
-
             - name: Jwt__Audience
               value: {{ .Values.jwt.audience | quote }}
-
             - name: Jwt__ExpiryMinutes
               value: {{ .Values.jwt.expiryMinutes | quote }}
-
-
-            # =========================
-            # MYSQL CONFIGURATION
-            # =========================
-
             - name: ConnectionStrings__DefaultConnection
               valueFrom:
                 secretKeyRef:
-                  name: ecommerce-runtime-secret
+                  name: {{ .Values.backend.existingSecret | quote }}
                   key: mysql-connection
-
-
-            # =========================
-            # LOGGING CONFIGURATION
-            # =========================
-
             - name: LoggingSettings__Provider
               value: {{ .Values.logging.provider | quote }}
-
-
-            # =========================
-            # EMAIL CONFIGURATION
-            # =========================
-
             - name: EmailSettings__Enabled
               value: {{ .Values.email.enabled | quote }}
-
             - name: EmailSettings__Host
               value: {{ .Values.email.host | quote }}
-
             - name: EmailSettings__Port
               value: {{ .Values.email.port | quote }}
-
             - name: EmailSettings__EnableSsl
               value: {{ .Values.email.enableSsl | quote }}
-
             - name: EmailSettings__Username
               valueFrom:
                 secretKeyRef:
-                  name: ecommerce-runtime-secret
+                  name: {{ .Values.backend.existingSecret | quote }}
                   key: email-username
-
             - name: EmailSettings__Password
               valueFrom:
                 secretKeyRef:
-                  name: ecommerce-runtime-secret
+                  name: {{ .Values.backend.existingSecret | quote }}
                   key: email-password
-
             - name: EmailSettings__FromAddress
               valueFrom:
                 secretKeyRef:
-                  name: ecommerce-runtime-secret
+                  name: {{ .Values.backend.existingSecret | quote }}
                   key: email-from-address
-
             - name: EmailSettings__FromName
               value: {{ .Values.email.fromName | quote }}
-
-
-            # =========================
-            # GOOGLE CONFIGURATION
-            # =========================
-
             - name: Google__ClientId
               value: {{ .Values.google.clientId | quote }}
-
-
-            # =========================
-            # ALLOWED HOSTS
-            # =========================
-
             - name: AllowedHosts
               value: "*"
