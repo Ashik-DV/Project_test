@@ -34,7 +34,7 @@ infrastructure/
     └── values.yaml
 ```
 
-There is one Terraform root configuration at the infrastructure level (main.tf, variables.tf and outputs.tf). It calls the reusable modules. Dev and Prod each have exactly one terragrunt.hcl and their own terraform.tfvars. Do not create another Terraform root module under modules; those folders are reusable child modules only.
+There is one Terraform root configuration at the infrastructure level (main.tf, variables.tf and outputs.tf). It calls the reusable modules. Dev and Prod each have exactly one terragrunt.hcl and their own terraform.tfvars. The root infrastructure/terragrunt.hcl owns the Azure remote backend and provider generation. _common.hcl contains only shared local values. Do not add another backend configuration to main.tf or _common.hcl.
 
 ## Resources
 
@@ -47,31 +47,24 @@ There is one Terraform root configuration at the infrastructure level (main.tf, 
 
 The shared VNet, ACR and MySQL server are created by the Dev state. Prod reads their outputs from the Dev state. Therefore, deploy Dev first and do not destroy Dev while Prod depends on those shared resources.
 
-## 1. Bootstrap the remote state storage
+## 1. Remote state storage
 
-The remote-state resource group, storage account and container must exist before Terragrunt can initialize.
+The Azure remote-state storage has been bootstrapped with:
 
-```bash
-az group create --name rg-tfstate --location malaysiawest
-az storage account create --name <unique_storage_account_name> --resource-group rg-tfstate --location malaysiawest --sku Standard_LRS --kind StorageV2 --min-tls-version TLS1_2 --allow-blob-public-access false
-az storage container create --name tfstate --account-name <unique_storage_account_name> --auth-mode login
-```
+- Resource group: rg-tfstate
+- Storage account: ashiktfstate2168
+- Blob container: tfstate
+- Region: malaysiawest
 
-Replace REPLACE_WITH_STORAGE_ACCOUNT_NAME in:
-- infrastructure/terragrunt.hcl
-- infrastructure/dev/terragrunt.hcl
-- infrastructure/prod/terragrunt.hcl
+The root Terragrunt configuration uses the azurerm backend. The state keys are generated from each environment directory:
+- Dev: dev/terraform.tfstate
+- Prod: prod/terraform.tfstate
 
-Give your Azure identity Storage Blob Data Contributor on the storage account and sufficient permissions to create the Azure resources.
+Both environments use Azure AD authentication. The signed-in Azure identity needs Storage Blob Data Contributor on the storage account and sufficient permissions to create the Azure resources.
+
+The Terraform remote-state data source in main.tf intentionally reads dev/terraform.tfstate from Prod so Prod can consume the shared network, ACR and MySQL outputs created by Dev. This is separate from the Prod environment's own backend state.
 
 ## 2. Set Azure authentication and the MySQL password
-
-```bash
-az login
-az account set --subscription "<YOUR_SUBSCRIPTION_ID>"
-export ARM_SUBSCRIPTION_ID="<YOUR_SUBSCRIPTION_ID>"
-export TF_VAR_mysql_admin_password="<STRONG_UNIQUE_PASSWORD>"
-```
 
 For PowerShell:
 
@@ -86,14 +79,14 @@ Do not commit credentials or passwords to Git.
 
 Check available VM quota and SKU availability before deploying:
 
-```bash
+```powershell
 az vm list-usage --location malaysiawest -o table
 az vm list-skus --location malaysiawest --resource-type virtualMachines --query "[?name=='Standard_D2s_v3']" -o table
 ```
 
 ## 3. Deploy Dev first
 
-```bash
+```powershell
 cd infrastructure/dev
 terragrunt init
 terragrunt validate
@@ -105,7 +98,7 @@ Dev creates its AKS cluster and Key Vault, plus the shared VNet, ACR and MySQL s
 
 ## 4. Deploy Prod second
 
-```bash
+```powershell
 cd ../prod
 terragrunt init
 terragrunt validate
