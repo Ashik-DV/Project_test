@@ -4,7 +4,7 @@ include "root" {
 
 locals {
   common = read_terragrunt_config(find_in_parent_folders("_common.hcl"))
-  env    = read_tfvars_file("${get_terragrunt_dir()}/terraform.tfvars")
+  env    = jsondecode(read_tfvars_file("${get_terragrunt_dir()}/terraform.tfvars"))
 }
 
 terraform {
