@@ -1,4 +1,24 @@
-# Prod application values.
-# Keep environment-specific Helm values here; the Terraform/AKS modules
-# do not read this file automatically.
+# Helm overrides for the Prod AKS cluster.
 environment: prod
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: ashikdv/ecommercefrontend
+    tag: latest
+
+backend:
+  replicaCount: 2
+  existingSecret: ecommerce-runtime-secret
+  image:
+    repository: ashikdv/ecommercebackend
+    tag: latest
+
+# The mysql-connection secret must target ecommerce_prod.
+ingress:
+  enabled: true
+  className: nginx
+  host: ""
+
+logging:
+  provider: Both
