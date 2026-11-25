@@ -189,33 +189,53 @@ catch (Exception ex)
 
 static async Task EnsureProductSearchColumnsAsync(AppDbContext dbContext)
 {
-    await dbContext.Database.ExecuteSqlRawAsync(
-        """
-        SET @category_sql = IF(
-            EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
-                   WHERE TABLE_SCHEMA = DATABASE()
-                     AND TABLE_NAME = 'Products'
-                     AND COLUMN_NAME = 'Category'),
-            'SELECT 1',
-            'ALTER TABLE `Products` ADD COLUMN `Category` varchar(100) NOT NULL DEFAULT '''''');
-        PREPARE category_statement FROM @category_sql;
-        EXECUTE category_statement;
-        DEALLOCATE PREPARE category_statement;
-        """);
+    var connection = dbContext.Database.GetDbConnection();
+    var shouldClose = connection.State != System.Data.ConnectionState.Open;
 
-    await dbContext.Database.ExecuteSqlRawAsync(
+    if (shouldClose)
+    {
+        await connection.OpenAsync();
+    }
+
+    await EnsureColumnAsync(connection, "Category", "varchar(100)");
+    await EnsureColumnAsync(connection, "Brand", "varchar(100)");
+
+    if (shouldClose)
+    {
+        await connection.CloseAsync();
+    }
+}
+
+static async Task EnsureColumnAsync(
+    System.Data.Common.DbConnection connection,
+    string columnName,
+    string columnType)
+{
+    await using var checkCommand = connection.CreateCommand();
+    checkCommand.CommandText =
         """
-        SET @brand_sql = IF(
-            EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
-                   WHERE TABLE_SCHEMA = DATABASE()
-                     AND TABLE_NAME = 'Products'
-                     AND COLUMN_NAME = 'Brand'),
-            'SELECT 1',
-            'ALTER TABLE `Products` ADD COLUMN `Brand` varchar(100) NOT NULL DEFAULT '''''');
-        PREPARE brand_statement FROM @brand_sql;
-        EXECUTE brand_statement;
-        DEALLOCATE PREPARE brand_statement;
-        """);
+        SELECT COUNT(*)
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'Products'
+          AND COLUMN_NAME = @columnName
+        """;
+
+    var parameter = checkCommand.CreateParameter();
+    parameter.ParameterName = "@columnName";
+    parameter.Value = columnName;
+    checkCommand.Parameters.Add(parameter);
+
+    var count = Convert.ToInt64(await checkCommand.ExecuteScalarAsync());
+    if (count > 0)
+    {
+        return;
+    }
+
+    await using var alterCommand = connection.CreateCommand();
+    alterCommand.CommandText =
+        $"ALTER TABLE `Products` ADD COLUMN `{columnName}` {columnType} NOT NULL DEFAULT ''";
+    await alterCommand.ExecuteNonQueryAsync();
 }
 
 if (app.Environment.IsDevelopment())

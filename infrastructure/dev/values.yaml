@@ -12,7 +12,8 @@ backend:
   existingSecret: ecommerce-runtime-secret
   image:
     repository: ecomlabuou1fc.azurecr.io/ecommercebackend
-    tag: b20943f73a46a094e50524828ffd281a2771e21b
+    tag: schemafix-20261125-v2
+>>>>>>> 80a11a9 (Fix product schema startup repair)
 
 # The mysql-connection secret must target ecommerce_dev.
 ingress:

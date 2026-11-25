@@ -24,3 +24,7 @@ yarn-error.log*
 *.tfplan
 *.tfvars
 crash.log
+
+# .NET build output
+bin/
+obj/
