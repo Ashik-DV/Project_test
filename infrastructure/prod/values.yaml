@@ -12,7 +12,7 @@ backend:
   existingSecret: ecommerce-runtime-secret
   image:
     repository: ecomlabuou1fc.azurecr.io/ecommercebackend
-    tag: sessionfix-20261125
+    tag: 8146adc
 
 # The mysql-connection secret must target ecommerce_prod.
 ingress:
