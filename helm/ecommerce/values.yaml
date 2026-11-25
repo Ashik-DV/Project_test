@@ -13,7 +13,7 @@ backend:
   replicaCount: 1
   existingSecret: ecommerce-runtime-secret
   image:
-    repository: ashikdv/ecommercebackend
+    repository: ecomlabuou1fc.azurecr.io/ecommercebackend
     tag: latest
     pullPolicy: Always
   service:

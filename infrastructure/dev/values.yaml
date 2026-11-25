@@ -11,8 +11,8 @@ backend:
   replicaCount: 1
   existingSecret: ecommerce-runtime-secret
   image:
-    repository: ashikdv/ecommercebackend
-    tag: latest
+    repository: ecomlabuou1fc.azurecr.io/ecommercebackend
+    tag: sessionfix-20261125
 
 # The mysql-connection secret must target ecommerce_dev.
 ingress:

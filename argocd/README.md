@@ -37,7 +37,17 @@ The Dev MySQL connection string must select database `ecommerce_dev`; the Prod c
 
 ## Container image registry
 
-The current GitHub Actions workflows publish images to Docker Hub (`ashikdv/ecommercebackend` and `ashikdv/ecommercefrontend`), and the environment Helm values use those same repositories. The Terraform stack also creates an Azure Container Registry and grants AKS pull access to it, but the workflows do not currently publish to that ACR. This does not prevent the chart from pulling public Docker Hub images; it means ACR is provisioned but not yet used by the current CI pipeline.
+The Frontend CI and Backend CI workflows publish immutable Git-SHA-tagged Docker images to `ecomlabuou1fc.azurecr.io`. Pull requests only build and test the application and do not authenticate to or push to ACR.
+
+Configure these GitHub Actions repository secrets for OIDC authentication:
+
+- `AZURE_CLIENT_ID`
+- `AZURE_TENANT_ID`
+- `AZURE_SUBSCRIPTION_ID`
+
+The Azure application/client identity must have `AcrPush` access to the ACR and must be configured as a federated credential for the repository and `main` environment. The workflow also needs repository permission to write contents so it can update `infrastructure/dev/values.yaml` and `infrastructure/prod/values.yaml`; the `[skip ci]` commit prevents image workflows from retriggering themselves.
+
+On every main-branch application push, CI builds and pushes the image, then updates the frontend or backend Helm tag in both environment values files. Argo CD detects the Git change and reconciles the matching environment.
 
 ## Ingress
 

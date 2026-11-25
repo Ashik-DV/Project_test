@@ -15,8 +15,16 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: write
+  id-token: write
+
+env:
+  ACR_NAME: ecomlabuou1fc
+  ACR_LOGIN_SERVER: ecomlabuou1fc.azurecr.io
+
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
 
     defaults:
@@ -24,46 +32,83 @@ jobs:
         working-directory: ECommerceApp/ECommerceBackend
 
     steps:
-
-      # 1. Checkout source code
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      # 2. Setup .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      # 3. Restore dependencies
       - name: Restore dependencies
         run: dotnet restore ECommerceBackend.csproj
 
-      # 4. Build application
       - name: Build application
         run: dotnet build ECommerceBackend.csproj --configuration Release --no-restore
 
-      # 5. Publish application
       - name: Publish application
         run: dotnet publish ECommerceBackend.csproj --configuration Release --no-build --output ./publish
 
-      # 6. Login to Docker Hub
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+      - name: Azure login
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: azure/login@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # 7. Build Docker image
-      - name: Build Docker image
+      - name: Login to ACR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          az acr login --name "$ACR_NAME"
+
+      - name: Build and push image to ACR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           docker build \
-            -t ashikdv/ecommercebackend:${{ github.sha }} \
-            -t ashikdv/ecommercebackend:latest \
+            -t "$ACR_LOGIN_SERVER/ecommercebackend:${{ github.sha }}" \
             .
+          docker push "$ACR_LOGIN_SERVER/ecommercebackend:${{ github.sha }}"
 
-      # 8. Push Docker image
-      - name: Push Docker image
+      - name: Update Helm image tags
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: .
         run: |
-          docker push ashikdv/ecommercebackend:${{ github.sha }}
-          docker push ashikdv/ecommercebackend:latest
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin main
+          git switch main
+          git pull --rebase origin main
+
+          python - <<'PY'
+          from pathlib import Path
+
+          tag = "${{ github.sha }}"
+          for name in ("infrastructure/dev/values.yaml", "infrastructure/prod/values.yaml"):
+              path = Path(name)
+              text = path.read_text()
+              lines = text.splitlines()
+              in_backend = False
+              changed = False
+              for index, line in enumerate(lines):
+                  if line.startswith("backend:"):
+                      in_backend = True
+                  elif line and not line.startswith((" ", "\t")):
+                      in_backend = False
+                  elif in_backend and line.strip().startswith("tag:"):
+                      indent = line[:len(line) - len(line.lstrip())]
+                      lines[index] = f"{indent}tag: {tag}"
+                      changed = True
+              if changed:
+                  path.write_text("\n".join(lines) + "\n")
+          PY
+
+          git add infrastructure/dev/values.yaml infrastructure/prod/values.yaml
+          if git diff --cached --quiet; then
+            echo "No Helm image tag change."
+          else
+            git commit -m "chore(backend): deploy ${{ github.sha }} [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
