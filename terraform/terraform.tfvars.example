@@ -1,0 +1,24 @@
+# Copy this file to terraform.tfvars if you want to override defaults.
+# Never commit terraform.tfvars or real passwords/secrets.
+# Check Azure policy, regional VM availability and quota before terraform apply.
+
+location            = "malaysiawest"
+resource_group_name = "rg-ecommerce-observability"
+cluster_name        = "aks-ecommerce-observability"
+dns_prefix          = "ecommerce-observability"
+
+node_count   = 1
+node_vm_size = "Standard_D2as_v5"
+
+vnet_cidr         = "10.20.0.0/16"
+aks_subnet_cidr   = "10.20.1.0/24"
+mysql_subnet_cidr = "10.20.2.0/24"
+
+mysql_server_name     = "mysql-ecommerce-observability"
+mysql_database_name   = "ecommerce"
+mysql_admin_username  = "mysqladmin"
+mysql_sku_name        = "B_Standard_B1ms"
+mysql_storage_size_gb = 20
+
+# Empty means Azure selects its current default supported Kubernetes version.
+kubernetes_version = ""

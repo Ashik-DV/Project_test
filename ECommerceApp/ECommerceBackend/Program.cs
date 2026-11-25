@@ -48,7 +48,8 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 "http://localhost:5173",
-                "http://ashik.test")
+                "http://ashik.test",
+                "http://20.17.147.112")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
