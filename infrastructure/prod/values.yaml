@@ -5,7 +5,7 @@ frontend:
   replicaCount: 2
   image:
     repository: ecomlabuou1fc.azurecr.io/ecommercefrontend
-    tag: sessionfix-20261125
+    tag: 0782cf4ca235b6320526a8a4a4d2872fabbf2bb3
 
 backend:
   replicaCount: 2
