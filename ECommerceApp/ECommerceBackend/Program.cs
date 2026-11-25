@@ -149,6 +149,7 @@ try
 
     Console.WriteLine("Checking database...");
     await dbContext.Database.MigrateAsync();
+    await EnsureProductSearchColumnsAsync(dbContext);
     Console.WriteLine("Database migration completed.");
 
     const string adminEmail = "admin@ecommerce.com";
@@ -184,6 +185,37 @@ catch (Exception ex)
     Console.WriteLine(ex.Message);
     Console.WriteLine("================================");
     throw;
+}
+
+static async Task EnsureProductSearchColumnsAsync(AppDbContext dbContext)
+{
+    await dbContext.Database.ExecuteSqlRawAsync(
+        """
+        SET @category_sql = IF(
+            EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                   WHERE TABLE_SCHEMA = DATABASE()
+                     AND TABLE_NAME = 'Products'
+                     AND COLUMN_NAME = 'Category'),
+            'SELECT 1',
+            'ALTER TABLE `Products` ADD COLUMN `Category` varchar(100) NOT NULL DEFAULT '''''');
+        PREPARE category_statement FROM @category_sql;
+        EXECUTE category_statement;
+        DEALLOCATE PREPARE category_statement;
+        """);
+
+    await dbContext.Database.ExecuteSqlRawAsync(
+        """
+        SET @brand_sql = IF(
+            EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                   WHERE TABLE_SCHEMA = DATABASE()
+                     AND TABLE_NAME = 'Products'
+                     AND COLUMN_NAME = 'Brand'),
+            'SELECT 1',
+            'ALTER TABLE `Products` ADD COLUMN `Brand` varchar(100) NOT NULL DEFAULT '''''');
+        PREPARE brand_statement FROM @brand_sql;
+        EXECUTE brand_statement;
+        DEALLOCATE PREPARE brand_statement;
+        """);
 }
 
 if (app.Environment.IsDevelopment())
